@@ -46,8 +46,6 @@ public class TestServerExecutionListener implements TestExecutionListener {
 
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
-//        long past = System.currentTimeMillis();
-
         if (testPlan.getRoots().size() > 1) {
             throw new RuntimeException("The TestServerExtension is limited to a single test plan!");
         }
@@ -80,9 +78,6 @@ public class TestServerExecutionListener implements TestExecutionListener {
         }
 
         TestServerFactory factory = TestServerFactory.createInitializer(testServerFactoryInstance).initialize(deployments, configurations, new ExecutionPlan(testMethods));
-//        LOG.info("Initialized TestServerFactory{} in {} millis",
-//                testServerFactoryInstance == TestServerFactory.Instance.DEFAULT ? "" : String.format(" Instance %s", testServerFactoryInstance),
-//                System.currentTimeMillis() - past);
 
         if (TestServerFactory.Instance.DEFAULT == testServerFactoryInstance) {
             printTestServerFactory(testServerFactoryInstance, factory);
