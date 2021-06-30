@@ -57,11 +57,6 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
         return store;
     }
 
-//    private TestServerResource getTestServerResource(ExtensionContext context, TestScopeBinding fallbackTestScopeBinding) {
-//        ExtensionContext.Store store = getStore(context, fallbackTestScopeBinding);
-//        return store.get(fallbackTestScopeBinding, TestServerResource.class);
-//    }
-
     boolean injectFieldValue(Field field, Object instance, Object value) {
         if (field.isAnnotationPresent(Inject.class) && value.getClass().isAssignableFrom(field.getType())) {
             try {
@@ -268,9 +263,9 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
                         testIdentifier.className,
                         ofNullable(testIdentifier.methodName).map(s -> " # " + s).orElse(""),
                         testServerIdentifier.executionKey.context,
-                        testServer.getTestServerProtocol(),
-                        testServer.getTestServerHost(),
-                        testServer.getTestServerServicePort());
+                        testServer.protocol(),
+                        testServer.host(),
+                        testServer.port());
             }
             stop();
         }

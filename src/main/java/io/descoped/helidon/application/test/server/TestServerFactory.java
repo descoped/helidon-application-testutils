@@ -151,8 +151,6 @@ public class TestServerFactory {
         }
 
         TestServerFactory initialize(Deployments deployments, Configurations configurations, ExecutionPlan plan) {
-//            LOG.info("Initialize TestServerFactory {}..", instance);
-
             // iterate suite scope
             buildSuppliers(plan.allTestTargets(), supplierByContextMap);
 

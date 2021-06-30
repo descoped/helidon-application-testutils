@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 class TestServerIdentifier {
+
     final ExecutionKey executionKey;
     final List<TestMethod> testMethods;
 

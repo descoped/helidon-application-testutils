@@ -96,12 +96,8 @@ class TestServerExecutionListenerTest {
         List<Method> methods = listener.findMethodsByName(CaseNormalTest.class, MethodSource.from(CaseNormalTest.class.getName(), "thatExtensionIsInvoked"));
         assertEquals(1, methods.size());
 
-        assertThrows(IllegalStateException.class, () -> {
-            listener.findMethodsByName(CaseNormalTest.class, MethodSource.from(CaseNormalTest.class.getName(), "methodDoesNotExist"));
-        });
+        assertThrows(IllegalStateException.class, () -> listener.findMethodsByName(CaseNormalTest.class, MethodSource.from(CaseNormalTest.class.getName(), "methodDoesNotExist")));
     }
-
-
 
     private void printConfiguration(Configurations factory) {
         Set<ClassOrMethodIdentifier> ClassOrMethodIdentifiers = factory.keySet();

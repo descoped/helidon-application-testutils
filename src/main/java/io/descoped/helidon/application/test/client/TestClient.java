@@ -14,7 +14,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 public final class TestClient {
@@ -23,7 +22,6 @@ public final class TestClient {
 
     private final TestUriResolver server;
     private final HttpClient client;
-    private static final AtomicReference<TestClient> currentInstanceRef = new AtomicReference<>(null);
 
     private TestClient(TestUriResolver server) {
         this.server = server;
@@ -188,9 +186,7 @@ public final class TestClient {
         Map<String, String> headerMap = new LinkedHashMap<>();
         IntStream.range(0, keyValue.length)
                 .filter(i -> i % 2 == 0)
-                .forEach(n -> {
-                    headerMap.put(keyValue[n], keyValue[n + 1]);
-                });
+                .forEach(n -> headerMap.put(keyValue[n], keyValue[n + 1]));
         return headerMap;
     }
 

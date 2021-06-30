@@ -49,39 +49,6 @@ class Configurations {
         abstract void copyTo(Config.Builder builder);
     }
 
-    static class ConfigurationOverride extends Configuration {
-        final Map<String, String> overrideMap;
-
-        ConfigurationOverride(Map<String, String> overrideMap) {
-            this.overrideMap = overrideMap;
-        }
-
-        @Override
-        void copyTo(Config.Builder builder) {
-            builder.addSource(MapConfigSource.create(overrideMap));
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ConfigurationOverride that = (ConfigurationOverride) o;
-            return overrideMap.equals(that.overrideMap);
-        }
-
-        @Override
-        public int hashCode() {
-            return overrideMap.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return "ConfigurationOverride{" +
-                    "overrideMap=" + overrideMap +
-                    '}';
-        }
-    }
-
     static class ConfigurationProfile extends Configuration {
 
         final String profileName;
@@ -112,6 +79,39 @@ class Configurations {
         public String toString() {
             return "ConfigurationProfile{" +
                     "profileName='" + profileName + '\'' +
+                    '}';
+        }
+    }
+
+    static class ConfigurationOverride extends Configuration {
+        final Map<String, String> overrideMap;
+
+        ConfigurationOverride(Map<String, String> overrideMap) {
+            this.overrideMap = overrideMap;
+        }
+
+        @Override
+        void copyTo(Config.Builder builder) {
+            builder.addSource(MapConfigSource.create(overrideMap));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ConfigurationOverride that = (ConfigurationOverride) o;
+            return overrideMap.equals(that.overrideMap);
+        }
+
+        @Override
+        public int hashCode() {
+            return overrideMap.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "ConfigurationOverride{" +
+                    "overrideMap=" + overrideMap +
                     '}';
         }
     }

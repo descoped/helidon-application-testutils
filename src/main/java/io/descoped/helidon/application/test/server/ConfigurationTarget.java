@@ -3,7 +3,6 @@ package io.descoped.helidon.application.test.server;
 import io.descoped.helidon.application.base.ConfigHelper;
 import io.helidon.config.Config;
 import io.helidon.config.ConfigSources;
-import io.helidon.config.spi.Source;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,7 +19,6 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
     final ClassOrMethodIdentifier testIdentifier;
     final List<Configurations.Configuration> configurationList;
     private final Context context;
-    private List<Source.Builder<?>> configSources;
     private Config.Builder configBuilder;
 
     private ConfigurationTarget(ClassOrMethodIdentifier testIdentifier, List<Configurations.Configuration> configurationList) {
@@ -34,14 +32,9 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
         computedConfigCache = computedConfigCacheSupplier.get();
 
         // create config builder
-        configSources = createConfigSources();
         configBuilder = createConfigBuilder();
         // build current config builder
         for (Configurations.Configuration configuration : configurationList) {
-            if (configuration instanceof Configurations.ConfigurationProfile) {
-                Configurations.ConfigurationProfile configurationProfile = (Configurations.ConfigurationProfile) configuration;
-                configSources.add(ConfigSources.classpath(configurationProfile.profileName));
-            }
             configuration.copyTo(configBuilder);
         }
         // build ancestor config
@@ -59,13 +52,6 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
     private void checkIfInitialized() {
         Objects.requireNonNull(computedConfigCache, "Computed Configuration Cache NOT initialized!");
         Objects.requireNonNull(configBuilder, "Configuration NOT initialized!");
-    }
-
-    private List<Source.Builder<?>> createConfigSources() {
-        List<Source.Builder<?>> defaultSources = new ArrayList<>();
-        defaultSources.add(ConfigSources.classpath("application-defaults.yaml"));
-        defaultSources.add(ConfigSources.classpath("application-test.yaml"));
-        return defaultSources;
     }
 
     private Config.Builder createConfigBuilder() {
@@ -86,7 +72,6 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
     public Config.Builder toConfigBuilder() {
         checkIfInitialized();
         return configBuilder;
-//        return Config.builder(ConfigSources.create(configBuilder.build())).disableSystemPropertiesSource().disableEnvironmentVariablesSource();
     }
 
     public Config toConfig() {
@@ -103,33 +88,6 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
 
     @Override
     public boolean identicalTo(ConfigurationTarget other) {
-//        List<String> thisProfileList = new ArrayList<>();
-//        List<String> thatProfileList = new ArrayList<>();
-//        Map<String, String> thisOverrideMap = new LinkedHashMap<>();
-//        Map<String, String> thatOverrideMap = new LinkedHashMap<>();
-//        for (Configurations.Configuration configuration : configurationList) {
-//            if (configuration instanceof Configurations.ConfigurationProfile) {
-//                Configurations.ConfigurationProfile configurationProfile = (Configurations.ConfigurationProfile) configuration;
-//                thisProfileList.add(configurationProfile.profileName);
-//            } else if (configuration instanceof Configurations.ConfigurationOverride) {
-//                Configurations.ConfigurationOverride configurationOverride = (Configurations.ConfigurationOverride) configuration;
-//                thisOverrideMap.putAll(configurationOverride.overrideMap);
-//            } else {
-//                throw new IllegalStateException();
-//            }
-//        }
-//        for (Configurations.Configuration configuration : other.configurationList) {
-//            if (configuration instanceof Configurations.ConfigurationProfile) {
-//                Configurations.ConfigurationProfile configurationProfile = (Configurations.ConfigurationProfile) configuration;
-//                thatProfileList.add(configurationProfile.profileName);
-//            } else if (configuration instanceof Configurations.ConfigurationOverride) {
-//                Configurations.ConfigurationOverride configurationOverride = (Configurations.ConfigurationOverride) configuration;
-//                thatOverrideMap.putAll(configurationOverride.overrideMap);
-//            } else {
-//                throw new IllegalStateException();
-//            }
-//        }
-//        return thisProfileList.equals(thatProfileList) && thisOverrideMap.equals(thatOverrideMap);
         return this.toConfigMap().equals(other.toConfigMap());
     }
 
@@ -138,7 +96,6 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConfigurationTarget that = (ConfigurationTarget) o;
-//        return testIdentifier.equals(that.testIdentifier) && configurationList.equals(that.configurationList);
         return testIdentifier.equals(that.testIdentifier) && identicalTo(that);
     }
 

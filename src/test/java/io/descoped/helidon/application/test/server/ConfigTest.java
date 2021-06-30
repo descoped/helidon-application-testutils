@@ -41,7 +41,6 @@ public class ConfigTest {
 
         ConfigNode.ObjectNode nodeList = ConfigNode.ObjectNode.builder().addNode("k1", ConfigNode.ValueNode.create("v2")).build();
 
-//        configBuilder.addSource(ConfigSources.create(override));
         configBuilder.addSource(ConfigSources.create(nodeList));
 
         LOG.trace("configBuilder update1: {}", configBuilder.build().asMap().get());

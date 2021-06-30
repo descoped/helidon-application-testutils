@@ -44,22 +44,22 @@ public class TestServer implements TestUriResolver {
         return application.stop();
     }
 
-    public String getTestServerProtocol() {
+    public String protocol() {
         return application.getWebServerInfo().protocol();
     }
 
-    public String getTestServerHost() {
+    public String host() {
         return application.getWebServerInfo().host();
     }
 
-    public int getTestServerServicePort() {
+    public int port() {
         return application.getWebServerInfo().port();
     }
 
     @Override
     public String testURL(String uri) {
         try {
-            URL url = new URL(getTestServerProtocol(), getTestServerHost(), getTestServerServicePort(), uri);
+            URL url = new URL(protocol(), host(), port(), uri);
             return url.toExternalForm();
         } catch (MalformedURLException e) {
             throw new TestServerException(e);

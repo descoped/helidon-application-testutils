@@ -44,7 +44,6 @@ class TestServerExtensionRegisterTest {
         assertNotNull(injectFields.get(0).get(test));
     }
 
-
     /*
      * Negative test where wrong type is used for injection target.
      * The injection point is found in TestServerExtensionTest and is tried to be injected on this extension

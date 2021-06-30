@@ -1,6 +1,7 @@
 package io.descoped.helidon.application.test.server;
 
 public enum Context {
+
     ROOT,
     CLASS,
     METHOD;

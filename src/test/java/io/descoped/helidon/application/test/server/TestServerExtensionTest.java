@@ -81,5 +81,4 @@ class TestServerExtensionTest {
                     assertEquals(sourceMap.get(e.getKey()), e.getValue());
                 });
     }
-
 }

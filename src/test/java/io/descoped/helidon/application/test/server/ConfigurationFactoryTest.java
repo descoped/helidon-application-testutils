@@ -98,5 +98,4 @@ class ConfigurationFactoryTest {
         assertEquals(configurationOverride.hashCode(), map.hashCode());
         assertNotNull(configurationOverride.toString());
     }
-
 }
