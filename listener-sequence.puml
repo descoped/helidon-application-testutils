@@ -1,0 +1,36 @@
+@startuml
+
+== Initialization ==
+
+Launcher -> Listener : testPlanExecutionStarted()
+note over Listener : walk TestPlan
+
+activate Listener
+
+== Traverse ==
+
+entity ConfigurationFactory
+entity DeploymentFactory
+participant TestServerFactory
+
+
+Listener -> DeploymentFactory : create Deployment
+activate DeploymentFactory
+deactivate DeploymentFactory
+
+Listener -> ConfigurationFactory : add ClassOverrideConfiguration
+activate ConfigurationFactory
+
+Listener -> ConfigurationFactory : add MethodOverrideConfiguration
+deactivate ConfigurationFactory
+
+== Finalize ==
+
+Listener -> TestServerFactory : build TestFactorySupplier
+activate TestServerFactory
+deactivate TestServerFactory
+
+Launcher <-- Listener : initialize execution plan (TestServerFactory)
+
+@enduml
+
