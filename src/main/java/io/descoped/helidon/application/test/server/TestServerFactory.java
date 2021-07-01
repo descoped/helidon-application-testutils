@@ -69,7 +69,7 @@ public class TestServerFactory {
         return TestServerFactorySingleton.get();
     }
 
-    public static TestServerFactory instance(Instance name) {
+    static TestServerFactory instance(Instance name) {
         return TestServerFactorySingleton.get(name);
     }
 

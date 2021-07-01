@@ -32,7 +32,7 @@ public final class TestClient {
         return new TestClient(server);
     }
 
-    public static TestClient currentInstance() {
+    public static TestClient instance() {
         return TestServerFactory.instance().currentClient();
     }
 

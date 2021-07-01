@@ -26,19 +26,19 @@ public class TestServerExtensionBeforeAllAndEachTest {
 
     @BeforeAll
     static void beforeAll() {
-        assertNotNull(TestServer.currentInstance());
-        assertNotNull(TestClient.currentInstance());
+        assertNotNull(TestServer.instance());
+        assertNotNull(TestClient.instance());
     }
 
     @BeforeEach
     void beforeEach() {
-        assertEquals(testServer, TestServer.currentInstance());
-        assertEquals(testClient, TestClient.currentInstance());
+        assertEquals(testServer, TestServer.instance());
+        assertEquals(testClient, TestClient.instance());
     }
 
     @Test
     void testRootScoped() {
-        assertEquals(testServer, TestServer.currentInstance());
-        assertEquals(testClient, TestClient.currentInstance());
+        assertEquals(testServer, TestServer.instance());
+        assertEquals(testClient, TestClient.instance());
     }
 }

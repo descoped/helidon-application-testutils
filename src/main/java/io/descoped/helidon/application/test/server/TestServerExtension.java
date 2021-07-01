@@ -1,7 +1,7 @@
 package io.descoped.helidon.application.test.server;
 
 import io.descoped.helidon.application.test.client.TestClient;
-import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Optional.ofNullable;
 
-public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
+public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
     static final Logger LOG = LoggerFactory.getLogger(TestServerExtension.class);
 
@@ -143,7 +143,7 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
         }
 
         // find TestServerSupplier for both ROOT and CLASS context
-        ClassOrMethodIdentifier testClassIdentifier = ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass());
+        var testClassIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         Map<TestServerIdentifier, TestServerSupplier> testServerTargets = testServerFactory.findTestServerSuppliersForRootOrClassContextByClassIdentifier(testClassIdentifier);
         for (Map.Entry<TestServerIdentifier, TestServerSupplier> entry : testServerTargets.entrySet()) {
             LOG.debug("BEGIN {} @ Context: {}", extensionContext.getRequiredTestClass().getSimpleName(), entry.getKey().executionKey.context);
@@ -161,7 +161,7 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
             return;
         }
 
-        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod());
+        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         Map.Entry<TestServerIdentifier, TestServerSupplier> entry = testServerFactory.findTestServerSuppliersForMethodContextByMethodIdentifier(testMethodIdentifier);
         LOG.debug("BEGIN {} # {} @ Context: {}", testMethodIdentifier.className, testMethodIdentifier.methodName, entry.getKey().executionKey.context);
         ClassOrMethodIdentifier testIdentifier = entry.getKey().executionKey.context == Context.METHOD ? testMethodIdentifier : ClassOrMethodIdentifier.from(testMethodIdentifier.className);
@@ -169,11 +169,11 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
     }
 
     @Override
-    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
+    public void afterEach(ExtensionContext extensionContext) throws Exception {
         if (isNotValidTestServerExtension(extensionContext)) {
             return;
         }
-        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod());
+        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         Map.Entry<TestServerIdentifier, TestServerSupplier> entry = testServerFactory.findTestServerSuppliersForMethodContextByMethodIdentifier(testMethodIdentifier);
         LOG.debug("END {} # {} @ Context: {}", testMethodIdentifier.className, testMethodIdentifier.methodName, entry.getKey().executionKey.context);
     }
@@ -185,7 +185,7 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod());
+        ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         TestServerIdentifier testServerIdentifier = testServerFactory.findTestServerSuppliersForMethodContextByMethodIdentifier(testMethodIdentifier).getKey();
         ClassOrMethodIdentifier testIdentifier = testServerIdentifier.executionKey.context == Context.METHOD ? testMethodIdentifier : ClassOrMethodIdentifier.from(testMethodIdentifier.className);
         ExtensionContext.Store store = getStore(extensionContext, testIdentifier, testServerIdentifier.executionKey.context);

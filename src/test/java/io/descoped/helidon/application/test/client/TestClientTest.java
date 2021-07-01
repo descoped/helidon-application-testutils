@@ -20,7 +20,7 @@ public class TestClientTest {
 
     @Test
     void testGet() {
-        ResponseHelper<String> response = TestClient.currentInstance().get("/greet").expect200Ok();
+        ResponseHelper<String> response = TestClient.instance().get("/greet").expect200Ok();
         assertEquals("Hello World!", response.body());
     }
 

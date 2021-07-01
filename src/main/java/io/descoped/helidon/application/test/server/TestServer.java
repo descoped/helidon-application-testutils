@@ -32,7 +32,7 @@ public class TestServer implements TestUriResolver {
         this.configuration = this.application.configuration();
     }
 
-    public static TestServer currentInstance() {
+    public static TestServer instance() {
         return TestServerFactory.instance().currentServer();
     }
 
@@ -66,7 +66,7 @@ public class TestServer implements TestUriResolver {
         }
     }
 
-    public Config getConfiguration() {
+    public Config config() {
         return configuration;
     }
 

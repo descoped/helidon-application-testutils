@@ -27,7 +27,7 @@ class TestServerExtensionTest {
 
     @Test
     void testDefaultMethodConfiguration() {
-        Config defaultConfiguration = testServer.getConfiguration();
+        Config defaultConfiguration = testServer.config();
         assertNotNull(defaultConfiguration);
         assertFalse(defaultConfiguration.get("k1").exists(), "Key 'k1' exists!");
         assertConfiguration("testDefaultMethodConfiguration");
@@ -69,7 +69,7 @@ class TestServerExtensionTest {
                     assertEquals(expectedValue, actualValue);
                 });
 
-        assertPartialMap(testServer.getConfiguration().detach().asMap().get(), testMethodConfiguration.detach().asMap().get());
+        assertPartialMap(testServer.config().detach().asMap().get(), testMethodConfiguration.detach().asMap().get());
     }
 
     static void assertPartialMap(Map<String, String> sourceMap, Map<String, String> containsMap) {

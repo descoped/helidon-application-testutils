@@ -75,7 +75,7 @@ class TestServerExecutionListenerTest {
 
         assertNotNull(supplier);
 
-        Map<String, String> methodOverrideProfileMap = supplier.get().getConfiguration().asMap().get();
+        Map<String, String> methodOverrideProfileMap = supplier.get().config().asMap().get();
         assertEquals("bar", methodOverrideProfileMap.get("foo"));
 
         //printConfiguration(testServerExecutionListener.configurations);

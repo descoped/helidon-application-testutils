@@ -15,6 +15,7 @@ import org.junit.platform.launcher.TestPlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -93,33 +94,20 @@ public class TestServerExecutionListener implements TestExecutionListener {
         }
 
         // class level deployment
-        Class<?> deploymentTargetClass;
-        Method deploymentTargetMethod;
+        ClassOrMethodIdentifier deploymentMethodIdentifier;
         if (testClass.isAnnotationPresent(Deployment.class)) {
-            deploymentTargetClass = testClass.getDeclaredAnnotation(Deployment.class).target();
+            Class<?> deploymentTargetClass = testClass.getDeclaredAnnotation(Deployment.class).target();
             if (deploymentTargetClass == Void.class) {
-                throw new IllegalStateException("The @Deployment annotation requires 'target' property to be set at class level! " + testClass);
+                throw new IllegalStateException("Missing @Deployment.target for: " + testClass);
             }
-            deploymentTargetMethod = AnnotationUtils.findAnnotatedMethods(deploymentTargetClass, Deployment.class, ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
-                    .stream()
-                    .filter(method -> !method.isAnnotationPresent(Test.class))
-                    .reduce((u, v) -> {
-                        throw new IllegalStateException("More than one @Deployment found!");
-                    })
-                    .orElseThrow(() -> new IllegalStateException("Missing deployment for class '" + classSource.getClassName() + "'!"));
+            Method deploymentTargetMethod = getAnnotatedMethod(deploymentTargetClass, Deployment.class);
+            deploymentMethodIdentifier = ClassOrMethodIdentifier.from(deploymentTargetClass, deploymentTargetMethod);
         } else {
-            deploymentTargetClass = testClass;
-            deploymentTargetMethod = AnnotationUtils.findAnnotatedMethods(testClass, Deployment.class, ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
-                    .stream()
-                    .filter(method -> !method.isAnnotationPresent(Test.class))
-                    .reduce((u, v) -> {
-                        throw new IllegalStateException("More than one @Deployment found!");
-                    })
-                    .orElseThrow(() -> new IllegalStateException("Missing deployment for class '" + classSource.getClassName() + "'!"));
+            deploymentMethodIdentifier = ClassOrMethodIdentifier.from(testClass, getAnnotatedMethod(testClass, Deployment.class));
         }
         deployments.register(new DeploymentTarget.Builder()
                 .testIdentifier(ClassOrMethodIdentifier.from(classSource))
-                .deploymentIdentifier(ClassOrMethodIdentifier.from(deploymentTargetClass, deploymentTargetMethod))
+                .deploymentIdentifier(deploymentMethodIdentifier)
                 .build());
 
         // class level configuration
@@ -148,6 +136,27 @@ public class TestServerExecutionListener implements TestExecutionListener {
         configurations.register(builder.build());
     }
 
+    private Method getAnnotatedMethod(Class<?> clazz, Class<? extends Annotation> annotationType) {
+        return AnnotationUtils.findAnnotatedMethods(clazz, annotationType, ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+                .stream()
+                .filter(method -> !method.isAnnotationPresent(Test.class))
+                .reduce((u, v) -> {
+                    throw new IllegalStateException("More than one @" + annotationType + " found!");
+                })
+                .orElseThrow(() -> new IllegalStateException(annotationType.getSimpleName() + " NOT FOUND for class: '" + clazz + "'!"));
+    }
+
+    private ClassOrMethodIdentifier getMethodLevelDeployment(Class<?> atClass) {
+        Method deploymentTargetMethod = AnnotationUtils.findAnnotatedMethods(atClass, Deployment.class, ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
+                .stream()
+                .filter(method -> !method.isAnnotationPresent(Test.class))
+                .reduce((u, v) -> {
+                    throw new IllegalStateException("More than one @Deployment found!");
+                })
+                .orElseThrow(() -> new IllegalStateException("Missing deployment for class '" + atClass + "'!"));
+        return ClassOrMethodIdentifier.from(atClass, deploymentTargetMethod);
+    }
+
     private void dealWithMethodContext(Deployments deployments, Configurations configurations, TestMethods testMethods, TestIdentifier testIdentifier) {
         MethodSource methodSource = (MethodSource) testIdentifier.getSource().orElseThrow();
         Class<?> testClass = methodSource.getJavaClass();
@@ -160,18 +169,12 @@ public class TestServerExecutionListener implements TestExecutionListener {
 
         for (Method testMethod : matchingMethods) {
             // method level deployment
-            if (testMethod.isAnnotationPresent(Deployment.class)) { //  && !testMethod.isAnnotationPresent(Test.class)
+            if (testMethod.isAnnotationPresent(Deployment.class)) {
                 Class<?> deploymentTargetClass = testMethod.getDeclaredAnnotation(Deployment.class).target();
                 if (deploymentTargetClass == Void.class) {
                     throw new IllegalStateException("The @Deployment annotation requires 'target' property to be set at method level!");
                 }
-                Method deploymentTargetMethod = AnnotationUtils.findAnnotatedMethods(deploymentTargetClass, Deployment.class, ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
-                        .stream()
-                        .filter(method -> !method.isAnnotationPresent(Test.class))
-                        .reduce((u, v) -> {
-                            throw new IllegalStateException("More than one @Deployment found!");
-                        })
-                        .orElseThrow(() -> new IllegalStateException("Missing deployment for class '" + deploymentTargetClass + "'!"));
+                Method deploymentTargetMethod = getAnnotatedMethod(deploymentTargetClass, Deployment.class);
                 deployments.register(new DeploymentTarget.Builder()
                         .testIdentifier(ClassOrMethodIdentifier.from(methodSource))
                         .deploymentIdentifier(ClassOrMethodIdentifier.from(deploymentTargetClass, deploymentTargetMethod))

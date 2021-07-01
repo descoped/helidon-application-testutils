@@ -42,12 +42,14 @@ public class TestServerTest {
 public class MethodDeployment {
 
     @Deployment
-    static HelidonDeployment createDeployment() {
+    public static HelidonDeployment createDeployment() {
         return HelidonDeployment.newBuilder()
                 .configSource(ConfigSources.classpath("application-test.yaml").optional(true).build())
                 .routing(builder ->
                         builder.get("/greet", (req, res) ->
-                                res.send("Hello " + req.queryParams().first("message").orElseThrow())))
+                                res.send("Hello " + TestServer.instance()
+                                        .config().get("message").asString().orElseThrow(IllegalArgumentException::new)))
+                )
                 .build();
     }
 }
@@ -66,13 +68,8 @@ public class TestServerTest {
     @Deployment(target = MethodDeployment.class)
     @ConfigurationOverride({"message", "World!"})
     void testServer() {
-        TestClient client = TestClient.currentInstance();
-        TestServer server = TestServer.currentInstance();
-        
-        String message = server.getConfiguration().get("message").asString().get();
-        ResponseHelper<String> response = client.get("/greet?message=" + message).expect200Ok();
-        LOG.trace("{}", response.body());
-        assertEquals("Hello " + message, response.body());
+        ResponseHelper<String> response = TestClient.instance().get("/greet").expect200Ok();
+        assertEquals("Hello " + TestServer.instance().config().get("message").asString().get(), response.body());
     }
 }    
 ```

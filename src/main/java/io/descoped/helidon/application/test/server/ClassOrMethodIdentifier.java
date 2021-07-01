@@ -1,5 +1,6 @@
 package io.descoped.helidon.application.test.server;
 
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -23,6 +24,13 @@ class ClassOrMethodIdentifier {
         Objects.requireNonNull(methodName);
         this.className = className;
         this.methodName = methodName;
+    }
+
+    static ClassOrMethodIdentifier from(ExtensionContext extensionContext) {
+        Objects.requireNonNull(extensionContext);
+        return extensionContext.getTestMethod().isPresent() ?
+            ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod()) :
+            ClassOrMethodIdentifier.from(extensionContext.getRequiredTestClass());
     }
 
     static ClassOrMethodIdentifier from(TestSource testSource) {
