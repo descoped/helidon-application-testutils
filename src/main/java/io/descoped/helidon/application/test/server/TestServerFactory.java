@@ -69,8 +69,8 @@ public class TestServerFactory {
         return TestServerFactorySingleton.get();
     }
 
-    static TestServerFactory instance(Instance name) {
-        return TestServerFactorySingleton.get(name);
+    static TestServerFactory instance(Instance instance) {
+        return TestServerFactorySingleton.get(instance);
     }
 
     public Set<TestServerIdentifier> keySet() {
@@ -138,6 +138,20 @@ public class TestServerFactory {
         return testServerResource.getClient();
     }
 
+    static void printTestServerFactory(TestServerFactory.Instance testServerFactoryInstance, TestServerFactory testServerFactory) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("\nExecution Tree ({}):\n\n\t{}", testServerFactoryInstance, testServerFactory.keySet()
+                    .stream()
+                    .sorted(Comparator.comparingInt(cmp -> cmp.executionKey.context.ordinal()))
+                    .map(builder -> "[" + builder.executionKey.context + "] @ " + builder.executionKey.deploymentIdentifier.className + "." + builder.executionKey.deploymentIdentifier.methodName + "\n\t|\n\t| " +
+                            builder.testMethods.stream()
+                                    .map(m -> m.testIdentifier.className + "." + m.testIdentifier.methodName)
+                                    .collect(Collectors.joining("\n\t| ")))
+                    .map(m -> m + "\n\t")
+                    .collect(Collectors.joining("\n\t")));
+        }
+    }
+
     static Initializer createInitializer(Instance name) {
         return new Initializer(name);
     }
@@ -187,8 +201,8 @@ public class TestServerFactory {
         }
 
         RuntimeException handleException(Exception e) {
-            if (e instanceof RuntimeException) {
-                return (RuntimeException) e;
+            if (e instanceof RuntimeException re) {
+                return re;
             }
             return new LoadTestClassException(e);
         }

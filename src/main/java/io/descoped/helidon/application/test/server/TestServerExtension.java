@@ -1,6 +1,7 @@
 package io.descoped.helidon.application.test.server;
 
 import io.descoped.helidon.application.test.client.TestClient;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Optional.ofNullable;
 
-public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
+public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
 
     static final Logger LOG = LoggerFactory.getLogger(TestServerExtension.class);
 
@@ -143,7 +144,7 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
         }
 
         // find TestServerSupplier for both ROOT and CLASS context
-        var testClassIdentifier = ClassOrMethodIdentifier.from(extensionContext);
+        ClassOrMethodIdentifier testClassIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         Map<TestServerIdentifier, TestServerSupplier> testServerTargets = testServerFactory.findTestServerSuppliersForRootOrClassContextByClassIdentifier(testClassIdentifier);
         for (Map.Entry<TestServerIdentifier, TestServerSupplier> entry : testServerTargets.entrySet()) {
             LOG.debug("BEGIN {} @ Context: {}", extensionContext.getRequiredTestClass().getSimpleName(), entry.getKey().executionKey.context);
@@ -176,6 +177,19 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
         ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext);
         Map.Entry<TestServerIdentifier, TestServerSupplier> entry = testServerFactory.findTestServerSuppliersForMethodContextByMethodIdentifier(testMethodIdentifier);
         LOG.debug("END {} # {} @ Context: {}", testMethodIdentifier.className, testMethodIdentifier.methodName, entry.getKey().executionKey.context);
+    }
+
+    @Override
+    public void afterAll(ExtensionContext extensionContext) throws Exception {
+        if (isNotValidTestServerExtension(extensionContext)) {
+            return;
+        }
+        ClassOrMethodIdentifier testClassIdentifier = ClassOrMethodIdentifier.from(extensionContext);
+        Map<TestServerIdentifier, TestServerSupplier> testServerTargets = testServerFactory.findTestServerSuppliersForRootOrClassContextByClassIdentifier(testClassIdentifier);
+        for (Map.Entry<TestServerIdentifier, TestServerSupplier> entry : testServerTargets.entrySet()) {
+            LOG.debug("END {} @ Context: {}", extensionContext.getRequiredTestClass().getSimpleName(), entry.getKey().executionKey.context);
+            computeAndStartTestServerIfInactive(extensionContext, testClassIdentifier, entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
@@ -237,8 +251,8 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
                         LOG.error("While starting application", throwable);
                         System.exit(1);
                         return null;
-                    });
-
+                    })
+                    .join();
         }
 
         public void stop() {
@@ -250,7 +264,8 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
                             LOG.error("While shutting down application", throwable);
                             System.exit(1);
                             return null;
-                        });
+                        })
+                        .join();
         }
 
         @Override

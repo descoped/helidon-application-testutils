@@ -4,3 +4,5 @@ webserver:
   access-log:
     logger-name: "agent"
     format: "%h %u %t %r %s %b %{Referer}i %T"
+
+printDefaultExecutionTree: true

@@ -72,12 +72,13 @@ class TestServerExtensionTest {
         assertPartialMap(testServer.config().detach().asMap().get(), testMethodConfiguration.detach().asMap().get());
     }
 
-    static void assertPartialMap(Map<String, String> sourceMap, Map<String, String> containsMap) {
-        containsMap.entrySet()
+    static void assertPartialMap(Map<String, String> sourceMap, Map<String, String> subsetMap) {
+        // assert with subsetMap keyValue pairs
+        subsetMap.entrySet()
                 .stream()
                 .filter(e -> !e.getKey().startsWith("webserver"))
                 .forEach(e -> {
-                    assertTrue(sourceMap.containsKey(e.getKey()), "Source map does not contain key: " + e.getKey());
+                    assertTrue(sourceMap.containsKey(e.getKey()), "Source map does not contain key: " + e.getKey() + " in: " + sourceMap);
                     assertEquals(sourceMap.get(e.getKey()), e.getValue());
                 });
     }

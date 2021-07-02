@@ -45,6 +45,22 @@ class Configurations {
         return configurationMap.keySet();
     }
 
+    /**
+     * Search for first matching key in computed config cache. There is no guarantee that it finds the exact match
+     * as two different configurations may have different config values.
+     *
+     * @param key
+     * @return
+     */
+    public String tryFindConfigPropertyAsString(String key) {
+        for (Map<String, String> configMap : computedConfigCache.values()) {
+            if (configMap.containsKey(key)) {
+                return configMap.get(key);
+            }
+        }
+        return null;
+    }
+
     abstract static class Configuration {
         abstract void copyTo(Config.Builder builder);
     }

@@ -79,7 +79,7 @@ class ConfigurationFactoryTest {
     }
 
     @Test
-    void testConfigurationProfileAndOverrideIsLoaded() {
+    void testConfigurationProfileAndOverrideAreLoaded() {
         Config.Builder builder = ConfigHelper.createEmptyConfigBuilder();
 
         Configurations.ConfigurationProfile configurationProfile = new Configurations.ConfigurationProfile("dummy");

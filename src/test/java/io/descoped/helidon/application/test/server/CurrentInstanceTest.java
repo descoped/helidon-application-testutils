@@ -2,6 +2,7 @@ package io.descoped.helidon.application.test.server;
 
 import io.descoped.helidon.application.test.client.TestClient;
 import io.descoped.helidon.application.test.scenario.SuiteDeployment;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(TestServerExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @Deployment(target = SuiteDeployment.class)
-public class TestServerExtensionBeforeAllAndEachTest {
+public class CurrentInstanceTest {
 
     @Inject
     TestClient testClient;
@@ -37,7 +38,13 @@ public class TestServerExtensionBeforeAllAndEachTest {
     }
 
     @Test
-    void testRootScoped() {
+    void testContext() {
+        assertEquals(testServer, TestServer.instance());
+        assertEquals(testClient, TestClient.instance());
+    }
+
+    @AfterEach
+    void afterEach() {
         assertEquals(testServer, TestServer.instance());
         assertEquals(testClient, TestClient.instance());
     }

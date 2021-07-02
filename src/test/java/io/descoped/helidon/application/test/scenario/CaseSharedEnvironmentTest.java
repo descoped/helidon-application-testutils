@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(TestServerExtension.class)
-public class CaseFourTest {
+public class CaseSharedEnvironmentTest {
 
     @Deployment
     public static HelidonDeployment createDeployment() {

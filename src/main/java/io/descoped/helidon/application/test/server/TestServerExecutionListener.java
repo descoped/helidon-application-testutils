@@ -17,14 +17,12 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
@@ -60,17 +58,10 @@ public class TestServerExecutionListener implements TestExecutionListener {
         // traverse test plan identifiers
         walk(testPlan, rootIdentifier, (ancestors, testIdentifier) -> {
             switch (Context.ordinalOf(ancestors.size())) {
-                case ROOT:
-                    // ignore
-                    break;
-                case CLASS:
-                    dealWithClassContext(deployments, configurations, testIdentifier);
-                    break;
-                case METHOD:
-                    dealWithMethodContext(deployments, configurations, testMethods, testIdentifier);
-                    break;
-                default:
-                    throw new IllegalStateException();
+                case ROOT -> {}
+                case CLASS -> dealWithClassContext(deployments, configurations, testIdentifier);
+                case METHOD -> dealWithMethodContext(deployments, configurations, testMethods, testIdentifier);
+                default -> throw new IllegalStateException();
             }
         });
 
@@ -80,8 +71,8 @@ public class TestServerExecutionListener implements TestExecutionListener {
 
         TestServerFactory factory = TestServerFactory.createInitializer(testServerFactoryInstance).initialize(deployments, configurations, new ExecutionPlan(testMethods));
 
-        if (TestServerFactory.Instance.DEFAULT == testServerFactoryInstance) {
-            printTestServerFactory(testServerFactoryInstance, factory);
+        if (TestServerFactory.Instance.DEFAULT == testServerFactoryInstance && Boolean.parseBoolean(configurations.tryFindConfigPropertyAsString("printDefaultExecutionTree"))) {
+            TestServerFactory.printTestServerFactory(testServerFactoryInstance, factory);
         }
     }
 
@@ -260,20 +251,6 @@ public class TestServerExecutionListener implements TestExecutionListener {
             }
         } finally {
             ancestors.remove(currentTestIdentifier);
-        }
-    }
-
-    static void printTestServerFactory(TestServerFactory.Instance testServerFactoryInstance, TestServerFactory testServerFactory) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("\nExecution Tree ({}):\n\n\t{}", testServerFactoryInstance, testServerFactory.keySet()
-                    .stream()
-                    .sorted(Comparator.comparingInt(cmp -> cmp.executionKey.context.ordinal()))
-                    .map(builder -> "[" + builder.executionKey.context + "] @ " + builder.executionKey.deploymentIdentifier.className + "." + builder.executionKey.deploymentIdentifier.methodName + "\n\t|\n\t| " +
-                            builder.testMethods.stream()
-                                    .map(m -> m.testIdentifier.className + "." + m.testIdentifier.methodName)
-                                    .collect(Collectors.joining("\n\t| ")))
-                    .map(m -> m + "\n\t")
-                    .collect(Collectors.joining("\n\t")));
         }
     }
 }

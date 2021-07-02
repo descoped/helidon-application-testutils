@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * The purpose of this test class is to test TestServerExtension and to assert correct behaviour of its
  * injectFieldValue() method.
  */
-//@Disabled
 class TestServerExtensionRegisterTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestServerExtensionRegisterTest.class);

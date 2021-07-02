@@ -35,11 +35,11 @@ class ClassOrMethodIdentifier {
 
     static ClassOrMethodIdentifier from(TestSource testSource) {
         Objects.requireNonNull(testSource);
-        if (testSource instanceof ClassSource) {
-            return new ClassOrMethodIdentifier(((ClassSource) testSource).getClassName());
+        if (testSource instanceof ClassSource classSource) {
+            return new ClassOrMethodIdentifier(classSource.getClassName());
 
-        } else if (testSource instanceof MethodSource) {
-            return new ClassOrMethodIdentifier(((MethodSource) testSource).getClassName(), ((MethodSource) testSource).getMethodName());
+        } else if (testSource instanceof MethodSource methodSource) {
+            return new ClassOrMethodIdentifier(methodSource.getClassName(), methodSource.getMethodName());
 
         } else {
             throw new IllegalStateException();

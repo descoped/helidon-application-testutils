@@ -1,8 +1,8 @@
 package io.descoped.helidon.application.test.server;
 
-import io.descoped.helidon.application.test.scenario.CaseMixedConfigurationTest;
-import io.descoped.helidon.application.test.scenario.CaseNormalTest;
-import io.descoped.helidon.application.test.scenario.CaseThreeTest;
+import io.descoped.helidon.application.test.scenario.CaseConfigurationAnnotationsTest;
+import io.descoped.helidon.application.test.scenario.CaseMethodDeploymentTest;
+import io.descoped.helidon.application.test.scenario.CaseRegularTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
@@ -43,10 +43,10 @@ class TestServerExecutionListenerTest {
     void thatConfigurationFactoryDiscoversAllTestConfigurations() {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
-                        selectPackage(CaseNormalTest.class.getPackageName()),
-                        selectClass(CaseNormalTest.class),
-                        selectClass(CaseMixedConfigurationTest.class),
-                        selectClass(CaseThreeTest.class)
+                        selectPackage(CaseRegularTest.class.getPackageName()),
+                        selectClass(CaseRegularTest.class),
+                        selectClass(CaseConfigurationAnnotationsTest.class),
+                        selectClass(CaseMethodDeploymentTest.class)
                 )
                 .filters(
                         includeClassNamePatterns(".*Case(\\w+)Test$"),
@@ -70,7 +70,7 @@ class TestServerExecutionListenerTest {
 
         assertNotNull(testServerFactory);
 
-        ClassOrMethodIdentifier methodOverrideProfile = ClassOrMethodIdentifier.from(CaseMixedConfigurationTest.class, "thatMethodOverrideConfigurationIsCreated");
+        ClassOrMethodIdentifier methodOverrideProfile = ClassOrMethodIdentifier.from(CaseConfigurationAnnotationsTest.class, "thatMethodOverrideConfigurationIsCreated");
         TestServerSupplier supplier = testServerFactory.findByTestClassIdentifierAndContext(methodOverrideProfile, Context.CLASS);
 
         assertNotNull(supplier);
@@ -93,10 +93,10 @@ class TestServerExecutionListenerTest {
     @Test
     void thatReflectionFindMethodsByName() {
         TestServerExecutionListener listener = new TestServerExecutionListener(TestServerFactory.Instance.TEST_LISTENER);
-        List<Method> methods = listener.findMethodsByName(CaseNormalTest.class, MethodSource.from(CaseNormalTest.class.getName(), "thatExtensionIsInvoked"));
+        List<Method> methods = listener.findMethodsByName(CaseRegularTest.class, MethodSource.from(CaseRegularTest.class.getName(), "thatExtensionIsInvoked"));
         assertEquals(1, methods.size());
 
-        assertThrows(IllegalStateException.class, () -> listener.findMethodsByName(CaseNormalTest.class, MethodSource.from(CaseNormalTest.class.getName(), "methodDoesNotExist")));
+        assertThrows(IllegalStateException.class, () -> listener.findMethodsByName(CaseRegularTest.class, MethodSource.from(CaseRegularTest.class.getName(), "methodDoesNotExist")));
     }
 
     private void printConfiguration(Configurations factory) {
