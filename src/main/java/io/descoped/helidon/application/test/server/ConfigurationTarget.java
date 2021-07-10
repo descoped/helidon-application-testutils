@@ -3,6 +3,8 @@ package io.descoped.helidon.application.test.server;
 import io.descoped.helidon.application.base.ConfigHelper;
 import io.helidon.config.Config;
 import io.helidon.config.ConfigSources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,6 +15,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, DeploymentLifecycle {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationTarget.class);
 
     private Map<ClassOrMethodIdentifier, Map<String, String>> computedConfigCache;
 
@@ -33,25 +37,32 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
 
         // create config builder
         configBuilder = createConfigBuilder();
-        // build current config builder
-        for (Configurations.Configuration configuration : configurationList) {
+
+        // copy configuration to configBuilder
+        for (Configurations.Configuration configuration : this.configurationList) {
             configuration.copyTo(configBuilder);
+            LOG.warn("initialize: --> target: " + testIdentifier + "\n" + configuration);
         }
-        // build ancestor config
+
+        // copy ancestor class configuration to configBuilder
         if (testIdentifier.isMethod()) {
             ConfigurationTarget classLevelConfigurationTarget = configurations.tryGet(ClassOrMethodIdentifier.from(testIdentifier.className));
             if (classLevelConfigurationTarget != null) {
                 for (Configurations.Configuration configuration : classLevelConfigurationTarget.configurationList) {
+                    if (this.configurationList.contains(configuration)) {
+                        continue;
+                    }
                     configuration.copyTo(configBuilder);
                 }
             }
         }
+
         return this;
     }
 
     private void checkIfInitialized() {
-        Objects.requireNonNull(computedConfigCache, "Computed Configuration Cache NOT initialized!");
         Objects.requireNonNull(configBuilder, "Configuration NOT initialized!");
+        Objects.requireNonNull(computedConfigCache, "Computed Configuration Cache NOT initialized!");
     }
 
     private Config.Builder createConfigBuilder() {
@@ -79,11 +90,13 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
     }
 
     public Map<String, String> toConfigMap() {
-        return computedConfigCache.computeIfAbsent(this.testIdentifier, ignore -> this.toConfig().asMap().get())
+        final LinkedHashMap<String, String> collect = computedConfigCache.computeIfAbsent(this.testIdentifier, ignore -> this.toConfig().asMap().get())
                 .entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        LOG.warn("toConfigMap(): " + testIdentifier.toString() + "\n" + collect.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("\n")));
+        return collect;
     }
 
     @Override
@@ -96,7 +109,8 @@ class ConfigurationTarget implements CompareTargetState<ConfigurationTarget>, De
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConfigurationTarget that = (ConfigurationTarget) o;
-        return testIdentifier.equals(that.testIdentifier) && identicalTo(that);
+//        return testIdentifier.equals(that.testIdentifier) && identicalTo(that);
+        return testIdentifier.equals(that.testIdentifier) && configurationList.equals(that.configurationList);
     }
 
     @Override

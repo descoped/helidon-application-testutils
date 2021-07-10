@@ -40,16 +40,16 @@ public class CaseConfigurationAnnotationsTest {
     @ConfigurationOverride({"foo", "bar"})
     @Test
     public void thatMethodOverrideProfileConfigurationIsCreated() {
-//        assertEquals("v1", TestServer.instance().config().get("k1").asString().get());
-//        assertEquals("bar", TestServer.instance().config().get("foo").asString().get());
+        assertEquals("v1", TestServer.instance().config().get("k1").asString().get());
+        assertEquals("bar", TestServer.instance().config().get("foo").asString().get());
     }
 
     @ConfigurationProfile("dummy")
     @ConfigurationOverride({"foo", "bar"})
     @Test
     public void thatMethodOverrideProfileConfiguration2IsCreated() {
-//        assertEquals("v1", TestServer.instance().config().get("k1").asString().get());
-//        assertEquals("bar", TestServer.instance().config().get("foo").asString().get());
+        assertEquals("v1", TestServer.instance().config().get("k1").asString().get());
+        assertEquals("bar", TestServer.instance().config().get("foo").asString().get());
     }
 
     @Test

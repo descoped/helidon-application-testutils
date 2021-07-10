@@ -189,13 +189,19 @@ public class TestServerFactory {
                 // merge factory config with user provided defaultConfig
                 HelidonDeployment.Builder helidonDeploymentBuilder = HelidonDeployment.of(helidonDeployment);
                 Config.Builder deploymentTargetConfigBuilder = helidonDeploymentBuilder.configBuilder();
+                LOG.error("buildSuppliers: --> deploymentTargetConfigBuilder: {}\n{}", entry, deploymentTargetConfigBuilder.build().asMap().get());
                 Config.Builder testTargetConfigBuilder = executionKey.configurationTarget.toConfigBuilder();
+                LOG.error("buildSuppliers: --> testTargetConfigBuilder: {}\n{}", entry, testTargetConfigBuilder.build().asMap().get());
                 testTargetConfigBuilder.addSource(ConfigSources.create(deploymentTargetConfigBuilder.build()));
                 helidonDeploymentBuilder.configBuilder(testTargetConfigBuilder);
+
+                HelidonDeployment deployment = helidonDeploymentBuilder.build();
+
 
                 // create supplier
                 TestServerSupplier testServerSupplier = TestServerSupplier.create(helidonDeploymentBuilder);
                 TestServerIdentifier testServerIdentifier = new TestServerIdentifier(executionKey, testMethodList);
+                LOG.warn("deployment: {}\n{}", testServerIdentifier, deployment.config().asMap().get());
                 target.put(testServerIdentifier, testServerSupplier);
             }
         }

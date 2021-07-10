@@ -35,4 +35,12 @@ class TestServerIdentifier {
     public int hashCode() {
         return Objects.hash(executionKey);
     }
+
+    @Override
+    public String toString() {
+        return "TestServerIdentifier{" +
+                "executionKey=" + executionKey +
+                ", testMethods=" + testMethods +
+                '}';
+    }
 }

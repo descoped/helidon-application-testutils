@@ -1,6 +1,7 @@
 package io.descoped.helidon.application.test.server;
 
 import io.descoped.helidon.application.test.client.TestClient;
+import io.helidon.config.MissingValueException;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 import org.junit.platform.commons.support.HierarchyTraversalMode;
 import org.junit.platform.commons.support.ModifierSupport;
 import org.junit.platform.commons.support.ReflectionSupport;
@@ -24,10 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
-public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
+public class TestServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver, TestExecutionExceptionHandler {
 
     static final Logger LOG = LoggerFactory.getLogger(TestServerExtension.class);
 
@@ -215,6 +218,24 @@ public class TestServerExtension implements BeforeAllCallback, BeforeEachCallbac
         } else {
             throw new UnsupportedOperationException("Parameter type '" + parameterType.getName() + "' is NOT implemented!");
         }
+    }
+
+    @Override
+    public void handleTestExecutionException(ExtensionContext extensionContext, Throwable throwable) throws Throwable {
+        if (throwable instanceof MissingValueException e) {
+            ClassOrMethodIdentifier testMethodIdentifier = ClassOrMethodIdentifier.from(extensionContext);
+            try {
+                TestServerIdentifier testServerIdentifier = testServerFactory.findTestServerSuppliersForMethodContextByMethodIdentifier(testMethodIdentifier).getKey();
+                ClassOrMethodIdentifier testIdentifier = testServerIdentifier.executionKey.context == Context.METHOD ? testMethodIdentifier : ClassOrMethodIdentifier.from(testMethodIdentifier.className);
+                ExtensionContext.Store store = getStore(extensionContext, testIdentifier, testServerIdentifier.executionKey.context);
+                TestServerResource testServerResource = store.get(testIdentifier, TestServerResource.class);
+                LOG.error("Config for {}:\n\t{}", testMethodIdentifier, testServerResource.getServer().config().asMap().get().entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining("\n\t")));
+            } catch (Exception ex) {
+                LOG.error("Config NOT Found for: {}", testMethodIdentifier);
+                throw throwable;
+            }
+        }
+        throw throwable;
     }
 
     public static class TestServerResource implements ExtensionContext.Store.CloseableResource {
