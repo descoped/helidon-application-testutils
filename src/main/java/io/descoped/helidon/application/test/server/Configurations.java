@@ -27,7 +27,7 @@ class Configurations {
 
     /**
      * Try ConfigurationTarget will try to retrieve applied testIdentifier and if not present it will fallback
-     * and try to obtain by Class level identifier..
+     * and try to obtain by Class level identifier.
      *
      * @param testIdentifier
      * @return
